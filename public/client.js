@@ -418,6 +418,11 @@ socket.on('delPath',function(data){//@args Sender
     Drawers[data.sender].pop();
     redraw();
 });
+socket.on('nuke',function(){//@args Sender
+    Drawers = {};
+    Drawers.me = new Array();
+    redraw();
+});
 //socket.emit to send data to the server
 
 // ~~~~~ Page Setup ~~~~~

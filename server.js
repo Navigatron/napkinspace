@@ -34,6 +34,10 @@ io.sockets.on('connection', function(socket){
       console.log('DPTH:'+socket.id);
       socket.broadcast.emit('delPath',{sender:socket.id});
   });
+  socket.on('nuke', function(){
+      console.log('NUKE:'+socket.id);
+      socket.broadcast.emit('nuke');
+  });
 });
 
 //Make it live
