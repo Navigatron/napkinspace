@@ -37,6 +37,6 @@ io.sockets.on('connection', function(socket){
 });
 
 //Make it live
-http.listen(80, function(){
-  console.log('listening on *:80');
+http.listen(process.env.PORT || 8080, function(){
+  console.log('listening on port '+process.env.PORT || 8080);
 });
