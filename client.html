@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<head>
+    <!--Don't let them zoom. We zoom.-->
+    <meta name="viewport" value="user-scalable = no">
+    <!--Jquery, Jquery Drags, Socket.io, and the css-->
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+    <!--script src="//cdn.techpines.io/jquery.event.drag-2.0.js"></script><!---->
+    <script src="/socket.io/socket.io.js"></script>
+    <link rel="stylesheet" type="text/css" href="./client.css">
+</head>
+<body>
+    <div class='toolbar'>
+        <div id='tray_trigger_color' class="tray_trigger" data-tray='color'>
+            Color
+        </div>
+        <div id='tray_trigger_size' class="tray_trigger" data-tray='size'>
+            Size
+        </div>
+    </div>
+    <div class='tray' data-type='color'>
+        <div class="tray_object" data-value='#FFFFFF' style='background-color:#FFFFFF;'></div>
+        <div class="tray_object" data-value='#000000' style='background-color:#000000;'></div>
+        <div class="tray_object" data-value='#FF00FF' style='background-color:#FF00FF;'></div>
+        <div class="tray_object" data-value='#FF0000' style='background-color:#FF0000;'></div>
+        <div class="tray_object" data-value='#FFFF00' style='background-color:#FFFF00;'></div>
+        <div class="tray_object" data-value='#00FF00' style='background-color:#00FF00;'></div>
+        <div class="tray_object" data-value='#00FFFF' style='background-color:#00FFFF;'></div>
+        <div class="tray_object" data-value='#0000FF' style='background-color:#0000FF;'></div>
+    </div>
+    <div id='tray_size' class='tray' data-type='size'>
+        <canvas class="tray_object" data-value='2'></canvas>
+        <canvas class="tray_object" data-value='4'></canvas>
+        <canvas class="tray_object" data-value='8'></canvas>
+        <canvas class="tray_object" data-value='16'></canvas>
+        <canvas class="tray_object" data-value='32'></canvas>
+    </div>
+    <canvas id='canvas'></canvas>
+    <!--Script at the end so the canvas is already here when it arrives-->
+    <script src="/client.js"></script>
+</body>
+</html>

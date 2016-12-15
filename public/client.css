@@ -1,0 +1,57 @@
+body, html {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding:0;
+    overflow:hidden;
+}
+#canvas {
+    background-color: white;
+    position:fixed;
+    right:0;
+    top:0;
+}
+
+.toolbar{
+    background-color: #d0d0d0;
+    position: fixed;
+    z-index: 1;
+    top: 16px;
+    left: 16px;
+    box-shadow: 0px 0px 8px 1px #000;
+}
+.tray_trigger{
+    margin: 8px 8px;
+    height: 48px;
+    width: 48px;
+    background-color: white;
+    padding: 8px;
+}
+
+.tray{
+    position: fixed;
+    left: 0;
+    top: calc(100vh + 9px);
+    z-index: 1;
+    height: 80px;
+    width: 100%;
+    background-color: #d0d0d0;
+    display: flex;
+    box-shadow: 0px 0px 8px 1px;
+    transition: top 0.2s ease-in-out;
+}
+.tray_active{
+    z-index: 2;
+    top: calc(100vh - 80px);
+}
+
+.tray_object{
+    margin: 8px;
+    width: 48px;
+    height: 48px;
+    background: #EEE;
+    padding: 8px;
+}
+.tray_object_selected{
+    box-shadow: 0px 0px 8px 2px #000000;
+}
