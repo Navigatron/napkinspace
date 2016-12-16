@@ -315,13 +315,19 @@ var handleStop = function(){
 // ~~~~~ Event Listeners ~~~~~
 // ~~~ Touch Screens ~~~
 var guesturing = false;
+var fingersOnScreen = 0;
 canvas.addEventListener("touchstart",function(e){
     if(e.touches.length == 1){
         //There is one finger on the screen.
-        //If it's not because of a guesture, then it's because of a drag, so share it.
+        fingersOnScreen = 1;
+        //If it's not because of a guesture, then it's because of a drag - share it.
         if(!guesturing)handleStart(pageToWorld({x:e.touches[0].pageX,y:e.touches[0].pageY}));
     }else if(e.touches.length == 2){
-        //A second finger is touching the screen. Start a Guesture.
+        //There are two fingers on the screen.
+        if(fingersOnScreen==0){//If we're on a god damn iPhone and the first finger didn't register, don't delete the most recent path.
+            guesturing = true;
+        }
+        fingersOnScreen = 2;
         //Tell guestureStart if this is the first guesture in this touch action, so it can compensate if not.
         guestureStart(pageToCanvas({x:e.touches[0].pageX,y:e.touches[0].pageY}),pageToCanvas({x:e.touches[1].pageX,y:e.touches[1].pageY}),!guesturing);
         guesturing = true;
@@ -339,6 +345,7 @@ canvas.addEventListener('touchmove',function(e){
     }
 });
 canvas.addEventListener('touchend',function(e){
+    fingersOnScreen = e.touches.length;
     if(e.touches.length == 0){
         guesturing = false;//Reset the Guesturing Flag.
         //The last finger has been removed
