@@ -417,6 +417,7 @@ socket.on('draw',function(data){//@args X and Y and Sender
         //The problem with that is that it will require the server to save every user's most recent path data.
         return;
     }
+    if(!data.x)console.log('ERROR. x:'+data.x+', y:'+data.y+', sender:'+data.sender);
     Drawers[data.sender][Drawers[data.sender].length-1].points.push({x:data.x,y:data.y});
     update();
 });
