@@ -123,6 +123,10 @@ function draw(partial){
     for(var drawerk in Drawers){//Draw all the Drawers
         for(var pathk in Drawers[drawerk]){//Draw all their Paths
             var path = Drawers[drawerk][pathk];
+            if(path.points.length==0){
+                //This path doesn't have any points in it yet. Move on to the next path.
+                continue;
+            }
             if(!partial || path.drawn < path.points.length-1){//If everything, Draw. If partial, Only draw if needed.
                 //Start a new Path.
                 context.beginPath();
@@ -136,9 +140,6 @@ function draw(partial){
                 var i = partial?path.drawn:0;
                 //Move to the Starting Point.
                 var j = i==0? 0:i-1;
-                //console.log('i:'+i+',j:'+j+',path:'+path);//Why the hell is I -1? TODO remove this
-                if(!path.points)console.log('Path has no points:'+path);
-                if(!path.points[j])console.log('Index out of bounds exception: attempted to access index '+j+' of array of length '+path.points.length+'.');
                 context.moveTo(path.points[j].x,path.points[j].y);
                 for(i;i<path.points.length;i++){//Draw a Line to Each Point. TODO don't line to the first point.
                     context.lineTo(path.points[i].x,path.points[i].y);
