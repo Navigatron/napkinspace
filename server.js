@@ -34,9 +34,13 @@ io.sockets.on('connection', function(socket){
       console.log('DPTH:'+socket.id);
       socket.broadcast.emit('delPath',{sender:socket.id});
   });
+  socket.on('nuke', function(){
+      console.log('NUKE:'+socket.id);
+      socket.broadcast.emit('nuke');
+  });
 });
 
 //Make it live
-http.listen(80, function(){
-  console.log('listening on *:80');
+http.listen(process.env.PORT || 8080, function(){
+  console.log('listening on port '+process.env.PORT || 8080);
 });
