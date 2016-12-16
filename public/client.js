@@ -137,6 +137,8 @@ function draw(partial){
                 //Move to the Starting Point.
                 var j = i==0? 0:i-1;
                 //console.log('i:'+i+',j:'+j+',path:'+path);//Why the hell is I -1? TODO remove this
+                if(!path.points)console.log('Path has no points:'+path);
+                if(!path.points[j])console.log('Index out of bounds exception: attempted to access index '+j+' of array of length '+path.points.length+'.');
                 context.moveTo(path.points[j].x,path.points[j].y);
                 for(i;i<path.points.length;i++){//Draw a Line to Each Point. TODO don't line to the first point.
                     context.lineTo(path.points[i].x,path.points[i].y);
@@ -417,7 +419,6 @@ socket.on('draw',function(data){//@args X and Y and Sender
         //The problem with that is that it will require the server to save every user's most recent path data.
         return;
     }
-    if(!data.x)console.log('ERROR. x:'+data.x+', y:'+data.y+', sender:'+data.sender);
     Drawers[data.sender][Drawers[data.sender].length-1].points.push({x:data.x,y:data.y});
     update();
 });
