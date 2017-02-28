@@ -123,6 +123,10 @@ function draw(partial){
     for(var drawerk in Drawers){//Draw all the Drawers
         for(var pathk in Drawers[drawerk]){//Draw all their Paths
             var path = Drawers[drawerk][pathk];
+            if(path.points.length==0){
+                //This path doesn't have any points in it yet. Move on to the next path.
+                continue;
+            }
             if(!partial || path.drawn < path.points.length-1){//If everything, Draw. If partial, Only draw if needed.
                 //Start a new Path.
                 context.beginPath();
@@ -136,7 +140,6 @@ function draw(partial){
                 var i = partial?path.drawn:0;
                 //Move to the Starting Point.
                 var j = i==0? 0:i-1;
-                //console.log('i:'+i+',j:'+j+',path:'+path);//Why the hell is I -1? TODO remove this
                 context.moveTo(path.points[j].x,path.points[j].y);
                 for(i;i<path.points.length;i++){//Draw a Line to Each Point. TODO don't line to the first point.
                     context.lineTo(path.points[i].x,path.points[i].y);
@@ -315,13 +318,19 @@ var handleStop = function(){
 // ~~~~~ Event Listeners ~~~~~
 // ~~~ Touch Screens ~~~
 var guesturing = false;
+var fingersOnScreen = 0;
 canvas.addEventListener("touchstart",function(e){
     if(e.touches.length == 1){
         //There is one finger on the screen.
-        //If it's not because of a guesture, then it's because of a drag, so share it.
+        fingersOnScreen = 1;
+        //If it's not because of a guesture, then it's because of a drag - share it.
         if(!guesturing)handleStart(pageToWorld({x:e.touches[0].pageX,y:e.touches[0].pageY}));
     }else if(e.touches.length == 2){
-        //A second finger is touching the screen. Start a Guesture.
+        //There are two fingers on the screen.
+        if(fingersOnScreen==0){//If we're on a god damn iPhone and the first finger didn't register, don't delete the most recent path.
+            guesturing = true;
+        }
+        fingersOnScreen = 2;
         //Tell guestureStart if this is the first guesture in this touch action, so it can compensate if not.
         guestureStart(pageToCanvas({x:e.touches[0].pageX,y:e.touches[0].pageY}),pageToCanvas({x:e.touches[1].pageX,y:e.touches[1].pageY}),!guesturing);
         guesturing = true;
@@ -339,6 +348,7 @@ canvas.addEventListener('touchmove',function(e){
     }
 });
 canvas.addEventListener('touchend',function(e){
+    fingersOnScreen = e.touches.length;
     if(e.touches.length == 0){
         guesturing = false;//Reset the Guesturing Flag.
         //The last finger has been removed
@@ -416,6 +426,11 @@ socket.on('draw',function(data){//@args X and Y and Sender
 socket.on('delPath',function(data){//@args Sender
     //Remove the user's most recent path.
     Drawers[data.sender].pop();
+    redraw();
+});
+socket.on('nuke',function(){//@args Sender
+    Drawers = {};
+    Drawers.me = new Array();
     redraw();
 });
 //socket.emit to send data to the server

@@ -1,13 +1,16 @@
 {
-  "name": "MentalMonsoon",
+  "name": "Napkinspace",
   "version": "0.0.1",
   "description": "A realtime collaboration tool",
+  "author": {
+      "name": "Ethan Witherington"
+  },
   "engines": {
     "node": "6.9.2"
   },
   "dependencies": {
     "express": "*",
     "socket.io": "^1.7.2"
-  },
-  "engine": "node >=0.6.x"
+},
+"main": "./server.js"
 }
