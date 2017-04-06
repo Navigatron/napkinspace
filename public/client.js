@@ -80,7 +80,7 @@ $('.tray_trigger').on('click',function(){
 
 //Add event listeners to Tray objects.
 $('.tray_object').on('click',function(){
-    var value = $(this).data('value');
+    var value = $(this).data('value');// Ethan - used this variable to reduce jQuery calls
     var type = $(this).parent().data('type');
     if(value=='tray_close'){
         //Close this tray, we're done here.
@@ -89,17 +89,18 @@ $('.tray_object').on('click',function(){
     }
     //~~Josh~~ Tools are actually updated now
     if(type=='color'){
-        curColor = $(this).data('value');
+        curColor = value;
         curTool = "pen";
     }else if(type=='size'){
-        curSize = $(this).data('value');
+        curSize = value;
         curTool = "pen";
     }else if(type == 'options'){
-        if($(this).data('value') == 'Save'){
+        if(value == 'Save'){
             //~~Josh~~ This will save the image
-            window.location = canvas.toDataURL("image/png");
+            // Ethan - replaced line with function call
+            saveAsPNG();
         }
-        if($(this).data('value') == 'Text'){
+        if(value == 'Text'){
             //~~Josh~~ All this does right now is prevent drawing
             curTool = "text";
         }
@@ -189,6 +190,12 @@ var makeNewPath = function(){
         drawn:0//Used for the Update Function Optimization
     };
 }
+
+//Save the current view as a PNG file
+var saveAsPNG = function(){
+    window.location = canvas.toDataURL("image/png");
+}
+
 //@args point{x,y} in page space - pageX, pageY
 var pageToWorld = function(point){//converts Page X, Y to World X, Y
     return CanvasToWorld(pageToCanvas(point));
@@ -204,9 +211,9 @@ var pageToCanvas = function(point){//converts Page X, Y to canvas~ish X, Y
     };
 }
 
-//ALWAYS CLONE YOUR ARGUMENTS. GOD FUCKING DAMNIT.
+//ALWAYS CLONE YOUR ARGUMENTS. ***.
 var CanvasToWorld = function(pointeh){//Offset in canvas space, scale to world.
-    //Clone the object because Fuck Javascript.
+    //Clone the object because *** Javascript.
     var point = clone(pointeh);
     point.x+=camera.x;
     point.y-=camera.y;
@@ -216,7 +223,7 @@ var CanvasToWorld = function(pointeh){//Offset in canvas space, scale to world.
 }
 
 var WorldToCanvas = function(pointeh){//Scale out of world, un-apply offset.
-    var point = clone(pointeh);//See above. This really fucking pisses me off.
+    var point = clone(pointeh);//See above. This really *** pisses me off.
     point.x*=camera.scale;
     point.y*=camera.scale;
     point.x-=camera.x;
@@ -397,7 +404,7 @@ document.onkeypress = function(evt) {
     var charCode = evt.keyCode || evt.which;
     var charStr = String.fromCharCode(charCode);
     if(charStr == 's'){
-        window.location = canvas.toDataURL("image/png");
+        saveAsPNG();
     }
 };
 
