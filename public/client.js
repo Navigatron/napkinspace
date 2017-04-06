@@ -119,6 +119,12 @@ function redraw(){//redraw Everything.
 function update(){
     draw(true);
 }
+// ~~Josh~~ function to get value from the text field
+var getTextInput = function(){
+    return{
+        document.getElementById("uniqueID").value
+    };
+}
 //Draw the Drawings to the screen - Draw Every point, or just the ones that haven't been drawn yet, depending on args.
 //@args (boolean) partial - Draw everything, or just what needs to be drawn?
 function draw(partial){
@@ -321,7 +327,19 @@ var handleStart = function(point){
     }else if(curTool == pan){
         console.log('The PAN tool is not yet supported.');//TODO
     }else if(curTool == "text"){
-
+        // ~~Josh~~ saves X and Y of touched point
+        var textX = point.x;
+        var textY = point.y;
+        // ~~Josh~~ gets value of text field 
+        var textValue = getTextInput();
+        // ~~Josh~~ this saves the text values into an object
+        var textPath = {
+            x: textX,
+            y: textY,
+            value: textValue
+        };
+        // ~~Josh~~ need to push to Texters list
+        Texters.me.push(textPath);
     }//else spooky witchcraft.
     update();
 }
