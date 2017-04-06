@@ -2,15 +2,17 @@
 <head>
     <!--Make it the correct scale on mobile.-->
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!--Tell Iphone's to get rid of all that shit hogging the screen.-->
+    <!--Tell Iphone's to get rid of all that stuff hogging the screen.-->
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <!--Jquery, Jquery Drags, Socket.io, and the css-->
+    <!--Bring in Jquery because we like it.-->
     <script src="/jquery/jquery.min.js"></script>
-    <!--script src="//cdn.techpines.io/jquery.event.drag-2.0.js"></script><!---->
+    <!--Bring in socket.io so we can talk to the server-->
     <script src="/socket.io/socket.io.js"></script>
+    <!--Bring in the CSS because it looks so good-->
     <link rel="stylesheet" type="text/css" href="./client.css">
 </head>
 <body>
+    <!-- This is the toolbar. It holds menu items and is on the screen almost all the time. -->
     <div class='toolbar'>
         <div id='tray_trigger_color' class="tray_trigger" data-tray='color'>
             Color
@@ -22,6 +24,8 @@
             Other
         </div>
     </div>
+    <!-- These are trays. They hold more options. Trays are hidden by default, and show up when their menu item is clicked. -->
+    <!-- This tray allows users to select Colors -->
     <div class='tray' data-type='color'>
         <div class="tray_object" data-value='#FFFFFF' style='background-color:#FFFFFF;'></div>
         <div class="tray_object" data-value='#000000' style='background-color:#000000;'></div>
@@ -34,6 +38,7 @@
         <div class="tray_object" data-value='#FF9933' style='background-color:#FF9933;'></div>
         <div class="tray_object" data-value='#663300' style='background-color:#663300;'></div>
     </div>
+    <!-- This tray is for selecting the size of your drawing tool. -->
     <div id='tray_size' class='tray' data-type='size'>
         <canvas class="tray_object" data-value='2'></canvas>
         <canvas class="tray_object" data-value='4'></canvas>
@@ -41,11 +46,15 @@
         <canvas class="tray_object" data-value='16'></canvas>
         <canvas class="tray_object" data-value='32'></canvas>
     </div>
+    <!--This tray is for other things, such as Saving to PNG and/or drawing text. -->
     <div id='tray_options' class='tray' data-type='options'>
         <canvas class="tray_object" data-value='Save'></canvas>
         <canvas class="tray_object" data-value='Text'></canvas>
     </div>
+
+    <!--This is where the magic happens. -->
     <canvas id='canvas'></canvas>
+    
     <!--Script at the end so the canvas is already here when it arrives-->
     <script src="/client.js"></script>
 </body>
