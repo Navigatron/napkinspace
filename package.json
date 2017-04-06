@@ -1,16 +1,16 @@
 {
-  "name": "Napkinspace",
-  "version": "0.0.1",
-  "description": "A realtime collaboration tool",
-  "author": {
-      "name": "Ethan Witherington"
-  },
-  "engines": {
-    "node": "6.9.2"
-  },
-  "dependencies": {
-    "express": "*",
-    "socket.io": "^1.7.2"
-},
-"main": "./server.js"
+    "name": "Napkinspace",
+    "version": "0.0.1",
+    "description": "A realtime collaboration tool",
+    "author": {
+        "name": "Ethan Witherington"
+    },
+    "engines": {
+        "node": "6.9.2"
+    },
+    "dependencies": {
+        "express": "*",
+        "socket.io": "^1.7.2"
+    },
+    "main": "./server.js"
 }

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<head>
+    <!--Make it the correct scale on mobile.-->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!--Tell Iphone's to get rid of all that shit hogging the screen.-->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <!--Jquery, Jquery Drags, Socket.io, and the css-->
+    <script src="/jquery/jquery.min.js"></script>
+    <!--script src="//cdn.techpines.io/jquery.event.drag-2.0.js"></script><!---->
+    <script src="/socket.io/socket.io.js"></script>
+    <link rel="stylesheet" type="text/css" href="./init.css">
+</head>
+<body>
+    <div id='header'>
+        <h1>Napkinspace</h1>
+    </div>
+    <div id="page">
+        <div id='selectName' class='screen'>
+            <div class="card">
+                <h2>Username</h2>
+                <input type='text' id="username"></input>
+                <input type="button" id="submitName" VALUE="Submit"></input>
+            </div>
+        </div>
+        <div id='selectRoom' class='screen' style="display: none">
+            <div class='card'></div>
+            <div class='card'></div>
+            <div class='card'></div>
+        </div>
+        <div id='newRoom' class='popup'>
+        </div>
+        <div id='roomCode' class='popup'>
+        </div>
+    </div>
+    <!--Script at the end so the canvas is already here when it arrives-->
+    <script src="/init.js"></script>
+</body>
+</html>

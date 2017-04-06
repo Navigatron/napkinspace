@@ -5,8 +5,15 @@ var io = require('socket.io')(http);
 
 // Allow clients to grab static css and js
 app.use(express.static('public'));
-// Send client html.
+// Send initial client html, for choosing name and room
 app.get('/', function(req, res) {
+    res.sendFile(__dirname + '/init.html')
+})
+
+//Send client in-room html. Napkinspace Original.
+app.get('/room/:id', function(req, res) {
+    //Tell their socket to join req.params.id, if said room exists.
+    //It doesn't matter what room, the socket will join themselves, that's what matters.
     res.sendFile(__dirname + '/client.html')
 })
 
@@ -41,6 +48,8 @@ io.sockets.on('connection', function(socket){
 });
 
 //Make it live
+//TODO don't put this line into production!
+process.env.PORT = 8080;
 http.listen(process.env.PORT || 8080, function(){
   console.log('listening on port '+process.env.PORT || 8080);
 });
