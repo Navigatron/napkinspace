@@ -95,18 +95,13 @@ $('.tray_object').on('click',function(){
     }
     if(type=='color'){
         curColor = value;
-        curTool = "pen";
     }else if(type=='size'){
         curSize = value;
-        curTool = "pen";
+    }else if(type=='tool'){
+        curTool = value;
     }else if(type == 'options'){
         if(value == 'Save'){
             saveAsPNG();
-        }
-        if(value == 'Text'){
-            //~~Josh~~ All this does right now is prevent drawing
-            // Ethan - we'll implement the actual behavior on click, this line is all that needs to be here.
-            curTool = "text";
         }
     }else{
         console.log('Something went wrong - Tray Object clicked with no type');
@@ -541,6 +536,7 @@ window.onload = function(){
     resizeCanvas();
     redraw();
     //Draw option text in the options tray.
+    //TODO - if it doesn't need to be a dynamic canvas, it shouldnt be.
     $('#tray_options').children().each(function(){
         $(this)[0].width = 64;
         $(this)[0].height = 64;
