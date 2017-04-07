@@ -56,20 +56,30 @@ var camera = {
 // I love you, jquery.
 
 // Add event listeners to the main menu
-// Each menu item opens/closes its associated tray.
-$('.tray_trigger').on('click',function(){
-    //Which tray should we toggle?
-    var trayname = $(this).data('tray');
-    //Toggle desired Tray, Lower all other trays.
-    $('.tray').each(function(){
-        if($(this).data('type')==trayname){
-            //Turn this tray on, or off if it's already selected.
-            $(this).toggleClass('tray_active');
-        }else{
-            //make sure this tray is off.
-            $(this).removeClass('tray_active');
-        }
-    });
+// Menu items do one of two things:
+//  --Perform their specific action (save)
+//  --Open a tray to select another option (color)
+$('.menu_item').on('click',function(){
+    // What operation do we perform with this menu item?
+    // -- tray - open/close a tray
+    // -- action - a specific action.
+    var operation = $(this).data('operation');
+    if(operation=='tray'){
+        //Which tray should we toggle?
+        var trayname = $(this).data('tray');
+        //Toggle desired Tray, Lower all other trays.
+        $('.tray').each(function(){
+            if($(this).data('type')==trayname){
+                //Turn this tray on, or off if it's already selected.
+                $(this).toggleClass('tray_active');
+            }else{
+                //make sure this tray is off.
+                $(this).removeClass('tray_active');
+            }
+        });
+    }else if(operation=='action'){
+
+    }
 });
 
 //Add event listeners to Tray objects.

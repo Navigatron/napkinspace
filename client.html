@@ -14,13 +14,21 @@
 <body>
     <!-- This is the toolbar. It holds menu items and is on the screen almost all the time. -->
     <div class='toolbar'>
-        <div id='tray_trigger_color' class="tray_trigger" data-tray='color'>
+        <!--
+            Items in the toolbar are menu_items
+            All menu items must have the data-operation attribute, set one of the following:
+                tray
+                action
+            Tray items must have a data-tray attribute, set to the name of the tray to open
+            action items must have the data-action attribute, with a unique name for the js to catch.
+        -->
+        <div id='tray_trigger_color' class="menu_item" data-operation='tray' data-tray='color'>
             Color
         </div>
-        <div id='tray_trigger_size' class="tray_trigger" data-tray='size'>
+        <div id='tray_trigger_size' class="menu_item" data-operation='tray' data-tray='size'>
             Size
         </div>
-        <div id='tray_trigger_options' class="tray_trigger" data-tray='options'>
+        <div id='tray_trigger_options' class="menu_item" data-operation='tray' data-tray='options'>
             Other
         </div>
     </div>
