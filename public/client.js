@@ -192,7 +192,10 @@ var makeNewPath = function(){
 
 //Save the current view as a PNG file
 var saveAsPNG = function(){
-    window.location = canvas.toDataURL("image/png");
+    //Depends on canvas-toBlob.js and FileSaver.js
+    canvas.toBlob(function(blob) {
+        saveAs(blob, "output.png");
+    }, "image/png");
 }
 
 /*
