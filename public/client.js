@@ -3,19 +3,11 @@ var canvas = document.getElementById('canvas');
 var context = canvas.getContext("2d");
 
 //Brown - '#df4b26'
-var curColor = '#FF0000';
+var curColor = '#000000';
 var curTool = "pen";// pen, eraser, pan, text
 var curSize = 2;
 var Drawers = {
     me: new Array()//Comes included
-};
-//~~Josh~~ Duplicate array which stores
-//  1. Text X
-//  2. Text Y
-//  3. Text String
-//If I add text input compatibility I will use this
-var Texters = {
-    me: new Array()
 };
 //Drawing - Object of Drawers
 //Drawer - Array of Paths
@@ -111,6 +103,12 @@ $('.tray_object').on('click',function(){
 
 // ~~~~~ Functions - utility, drawing, math stuff. ~~~~~
 
+// ~~Josh~~ function to get value from the text field
+var getTextInput = function(){
+    var output = document.getElementById("textInput").value;
+    return output;
+}
+
 //Draw all the points
 function redraw(){//redraw Everything.
     draw(false);
@@ -118,12 +116,6 @@ function redraw(){//redraw Everything.
 //Draw any points that haven't been drawn yet.
 function update(){
     draw(true);
-}
-// ~~Josh~~ function to get value from the text field
-var getTextInput = function(){
-    return{
-        document.getElementById("uniqueID").value
-    };
 }
 //Draw the Drawings to the screen - Draw Every point, or just the ones that haven't been drawn yet, depending on args.
 //@args (boolean) partial - Draw everything, or just what needs to be drawn?
@@ -150,31 +142,52 @@ function draw(partial){
     for(var drawerk in Drawers){//Draw all the Drawers
         for(var pathk in Drawers[drawerk]){//Draw all their Paths
             var path = Drawers[drawerk][pathk];
-            if(path.points.length==0){
-                //This path doesn't have any points in it yet. Move on to the next path.
-                continue;
-            }
-            if(!partial || path.drawn < path.points.length-1){//If everything, Draw. If partial, Only draw if needed.
-                //Start a new Path.
-                context.beginPath();
-                //Set the color
-                context.strokeStyle = path.color;
-                //Set the size
-                context.lineWidth = path.size;
-                //Default Settings
-                context.lineCap = 'round';
-                //determine the starting point
-                var i = partial?path.drawn:0;
-                //Move to the Starting Point.
-                var j = i==0? 0:i-1;
-                context.moveTo(path.points[j].x,path.points[j].y);
-                for(i;i<path.points.length;i++){//Draw a Line to Each Point. TODO don't line to the first point.
-                    context.lineTo(path.points[i].x,path.points[i].y);
+            // ~~Josh~~ this will check if the current path is text or pen
+            if(path.pathType == 'pen'){
+                if(path.points.length==0){
+                    //This path doesn't have any points in it yet. Move on to the next path.
+                    continue;
                 }
-                //Update the drawn variable to reflect that all points have been drawn.
-                path.drawn = path.points.length;
-                //Draw the Path to the screen.
-                context.stroke();
+                if(!partial || path.drawn < path.points.length-1){//If everything, Draw. If partial, Only draw if needed.
+                    //Start a new Path.
+                    context.beginPath();
+                    //Set the color
+                    context.strokeStyle = path.color;
+                    //Set the size
+                    context.lineWidth = path.size;
+                    //Default Settings
+                    context.lineCap = 'round';
+                    //determine the starting point
+                    var i = partial?path.drawn:0;
+                    //Move to the Starting Point.
+                    var j = i==0? 0:i-1;
+                    context.moveTo(path.points[j].x,path.points[j].y);
+                    for(i;i<path.points.length;i++){//Draw a Line to Each Point. TODO don't line to the first point.
+                        context.lineTo(path.points[i].x,path.points[i].y);
+                    }
+                    //Update the drawn variable to reflect that all points have been drawn.
+                    path.drawn = path.points.length;
+                    //Draw the Path to the screen.
+                    context.stroke();
+                }
+            }
+            else if(path.pathType == 'text'){
+                //~~Josh~~ I removed the check length statement, because text will only be added if there is text
+                if(!partial){
+                    path.drawn = 'false';
+                }
+                if(path.drawn == 'false'){
+                    //Set the font
+                    context.font = '24px serif';
+                    //set the color
+                    context.color = '#FF0000';
+                    var outvalue = JSON.stringify(path.stringValue);
+                    outvalue = outvalue.substring(1,outvalue.length-1);
+                    //Draw the text
+                    context.fillText(outvalue, path.x, path.y);
+                    //Make sure it isn't drawn again
+                    path.drawn = 'true';
+                }
             }
         }
     }
@@ -193,6 +206,7 @@ var makeNewPath = function(){
         color: curColor,
         size: curSize/camera.scale,//TODO consider
         points: new Array(),
+        pathType: 'pen',
         drawn:0//Used for the Update Function Optimization
     };
 }
@@ -255,8 +269,8 @@ var guesture = {}; //The current guesture. {camera, point1, point2, average, dis
 var guestureStart = function(point1, point2, first){//Points in Canvas Space.
     //Two fingers don't happen at the same time. Delete the temporary path the first finger started.
     if(first){//Don't start deleting stuff if this is the second onwards guesture.
+        // ~~Josh~~ this section will ensure that it does not delete stuff from the drawers and texters arrays unless that is the actual tool
         Drawers.me.pop();
-        socket.emit('delPath');
     }
     //Guestures are about comparing the finger positions to where they started.
     //As such, we need to record their initial positions And the Camera initials, which the guestures will be changing.
@@ -324,23 +338,29 @@ var handleStart = function(point){
         Drawers.me.push(newPath);
         socket.emit('newPath',{color:newPath.color,size:newPath.size});
         socket.emit('draw',point);
-    }else if(curTool == pan){
+    }else if(curTool == 'pan'){
         console.log('The PAN tool is not yet supported.');//TODO
-    }else if(curTool == "text"){
+    }else if(curTool == 'text'){
         // ~~Josh~~ saves X and Y of touched point
         var textX = point.x;
         var textY = point.y;
         // ~~Josh~~ gets value of text field 
         var textValue = getTextInput();
+        // ~~Josh~~ this distinguishes a path between pen or text
+        var tempPathType = 'text';
         // ~~Josh~~ this saves the text values into an object
         var textPath = {
             x: textX,
             y: textY,
-            value: textValue
+            stringValue: textValue,
+            pathType: tempPathType,
+            drawn: 'false'
         };
         // ~~Josh~~ need to push to Texters list
-        Texters.me.push(textPath);
-    }//else spooky witchcraft.
+        Drawers.me.push(textPath);//else spooky witchcraft.
+        // ~~Josh~~ this is my first draft of a network function for text, based on the other draw function
+        socket.emit('newText',{x:textPath.x,y:textPath.y,stringValue:textPath.stringValue});
+    }
     update();
 }
 //Adds points to the current path.
@@ -367,6 +387,7 @@ var handleStop = function(){
 var guesturing = false;
 var fingersOnScreen = 0;
 canvas.addEventListener("touchstart",function(e){
+    e.preventDefault();
     if(e.touches.length == 1){
         //There is one finger on the screen.
         fingersOnScreen = 1;
@@ -415,16 +436,18 @@ canvas.addEventListener('touchcancel',function(e){
     console.log('cancel');//Just going to leave this like this for now. Not much we can do with this.
 });
 
+//~~JOSH~~ THIS SECTION IS GONZO? WHY? BCS I DID IT
+
 //~~Josh~~ This will allow the S key to save the camera as an image
 //I should also consider making this CTRL + S
-document.onkeypress = function(evt) {
-    evt = evt || window.event;
-    var charCode = evt.keyCode || evt.which;
-    var charStr = String.fromCharCode(charCode);
-    if(charStr == 's'){
-        saveAsPNG();
-    }
-};
+//document.onkeypress = function(evt) {
+//    evt = evt || window.event;
+//    var charCode = evt.keyCode || evt.which;
+//    var charStr = String.fromCharCode(charCode);
+//    if(charStr == 's'){
+//        saveAsPNG();
+//    }
+//};
 
 // ~~~ Mouse ~~~ DONE TODO - mouse zoom in out on scroll, mouse pan?
 
@@ -435,6 +458,7 @@ $('#canvas').mousedown(function(e){
     handleStart(pageToWorld({x:e.pageX,y:e.pageY}));
 });
 $('#canvas').mousemove(function(e){
+    e.preventDefault();
     if(mouseDown){
         handleDrag(pageToWorld({x:e.pageX,y:e.pageY}));
     }
@@ -468,6 +492,26 @@ socket.on('newPath',function(data){//@args color and size and sender
         drawn: 0
     });
 });
+// ~~Josh~~ this will tell how to handle a received text path
+// DON'T FORGET TO GIVE IT THE RIGHT TYPE AND SET IT TO NOT DRAWN
+socket.on('newText',function(data){
+    alert('received  sent text');
+    //Do we have a record of this sender?
+    if(!Drawers[data.sender]){
+        Drawers[data.sender] = new Array();
+    }
+    //Create a new Path for the sender
+    Drawers[data.sender].push({
+        x: data.x,
+        y: data.x,
+        stringValue: data.stringValue,
+        drawn: 'false',
+        pathType: 'text'
+    });
+    update();
+
+});
+//drawin stuffs
 socket.on('draw',function(data){//@args X and Y and Sender
     //Add a point to the user's current path
     if(!Drawers[data.sender]){
