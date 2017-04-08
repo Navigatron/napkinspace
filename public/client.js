@@ -143,7 +143,7 @@ function draw(partial){
         for(var pathk in Drawers[drawerk]){//Draw all their Paths
             var path = Drawers[drawerk][pathk];
             // ~~Josh~~ this will check if the current path is text or pen
-            if(path.pathType == 'pen'){
+            if(path.pathType != 'text'){
                 if(path.points.length==0){
                     //This path doesn't have any points in it yet. Move on to the next path.
                     continue;
@@ -495,7 +495,6 @@ socket.on('newPath',function(data){//@args color and size and sender
 // ~~Josh~~ this will tell how to handle a received text path
 // DON'T FORGET TO GIVE IT THE RIGHT TYPE AND SET IT TO NOT DRAWN
 socket.on('newText',function(data){
-    alert('received  sent text');
     //Do we have a record of this sender?
     if(!Drawers[data.sender]){
         Drawers[data.sender] = new Array();
@@ -503,7 +502,7 @@ socket.on('newText',function(data){
     //Create a new Path for the sender
     Drawers[data.sender].push({
         x: data.x,
-        y: data.x,
+        y: data.y,
         stringValue: data.stringValue,
         drawn: 'false',
         pathType: 'text'
