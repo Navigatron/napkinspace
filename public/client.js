@@ -93,8 +93,14 @@ $('.tray_object').on('click',function(){
             saveAsPNG();
         }
         if(value == 'Text'){
-            //~~Josh~~ All this does right now is prevent drawing
+            //~~Josh~~ Changes tool to place text
             curTool = "text";
+        }
+        if(value == 'Undo'){
+            //~~Josh~~ This will undo last action
+            Drawers.me.pop();
+            socket.emit('delPath');
+            redraw();
         }
     }else{
         console.log('Something went wrong - Tray Object clicked with no type');
@@ -524,6 +530,7 @@ socket.on('draw',function(data){//@args X and Y and Sender
     Drawers[data.sender][Drawers[data.sender].length-1].points.push({x:data.x,y:data.y});
     update();
 });
+
 socket.on('delPath',function(data){//@args Sender
     //Remove the user's most recent path.
     Drawers[data.sender].pop();
