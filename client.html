@@ -2,27 +2,42 @@
 <head>
     <!--Make it the correct scale on mobile.-->
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!--Tell Iphone's to get rid of all that shit hogging the screen.-->
+    <!--Tell Iphone's to get rid of all that stuff hogging the screen.-->
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <!--Jquery, Jquery Drags, Socket.io, and the css-->
+    <!--Bring in Jquery because we like it.-->
     <script src="/jquery/jquery.min.js"></script>
-    <!--script src="//cdn.techpines.io/jquery.event.drag-2.0.js"></script><!---->
+    <!--Bring in socket.io so we can talk to the server-->
     <script src="/socket.io/socket.io.js"></script>
+    <!--Bring in the CSS because it looks so good-->
     <link rel="stylesheet" type="text/css" href="./client.css">
 </head>
 <body>
+    <!-- This is the toolbar. It holds menu items and is on the screen almost all the time. -->
     <div class='toolbar'>
-        <div id='tray_trigger_color' class="tray_trigger" data-tray='color'>
+        <!--
+            Items in the toolbar are menu_items
+            All menu items must have the data-operation attribute, set one of the following:
+                tray
+                action
+            Tray items must have a data-tray attribute, set to the name of the tray to open
+            action items must have the data-action attribute, with a unique name for the js to catch.
+        -->
+        <div id='tray_trigger_tool' class="menu_item" data-operation='tray' data-tray='tool'>
+            Tool
+        </div>
+        <div id='tray_trigger_color' class="menu_item" data-operation='tray' data-tray='color'>
             Color
         </div>
-        <div id='tray_trigger_size' class="tray_trigger" data-tray='size'>
+        <div id='tray_trigger_size' class="menu_item" data-operation='tray' data-tray='size'>
             Size
         </div>
-        <div id='tray_trigger_options' class="tray_trigger" data-tray='options'>
+        <div id='tray_trigger_options' class="menu_item" data-operation='tray' data-tray='options'>
             Other
         </div>
     </div>
-    <div class='tray' data-type='color'>
+    <!-- These are trays. They hold more options. Trays are hidden by default, and show up when their menu item is clicked. -->
+    <!-- This tray allows users to select Colors -->
+    <div id='tray_color' class='tray' data-type='color'>
         <div class="tray_object" data-value='#FFFFFF' style='background-color:#FFFFFF;'></div>
         <div class="tray_object" data-value='#000000' style='background-color:#000000;'></div>
         <div class="tray_object" data-value='#FF00FF' style='background-color:#FF00FF;'></div>
@@ -34,6 +49,7 @@
         <div class="tray_object" data-value='#FF9933' style='background-color:#FF9933;'></div>
         <div class="tray_object" data-value='#663300' style='background-color:#663300;'></div>
     </div>
+    <!-- This tray is for selecting the size of your drawing tool. -->
     <div id='tray_size' class='tray' data-type='size'>
         <canvas class="tray_object" data-value='2'></canvas>
         <canvas class="tray_object" data-value='4'></canvas>
@@ -41,16 +57,32 @@
         <canvas class="tray_object" data-value='16'></canvas>
         <canvas class="tray_object" data-value='32'></canvas>
     </div>
+    <!--This tray is for other things, such as Saving to PNG and/or drawing text. -->
     <div id='tray_options' class='tray' data-type='options'>
         <canvas class="tray_object" data-value='Save'></canvas>
         <canvas class="tray_object" data-value='Undo'></canvas>
-        <canvas class="tray_object" data-value='Text'></canvas>
+    </div>
+    <!-- The tools tray -->
+    <div id='tray_tool' class='tray' data-type='tool'>
+        <div class="tray_object" data-value='pen'>
+            Pen
+        </div>
+        <div class="tray_object" data-value='text'>
+            Text
+        </div>
         <form>
             Text:<br>
             <input type="text" name="text" id="textInput" value="value"><br>
         </form>
     </div>
+
+    <!--This is where the magic happens. -->
     <canvas id='canvas'></canvas>
+
+    <!-- Canvas-toBlob.js is used to convert the canvas to an image -->
+    <script src="/canvas-toBlob.js"></script>
+    <!-- FileSaver.js is used to save an image -->
+    <script src="/FileSaver.js"></script>
     <!--Script at the end so the canvas is already here when it arrives-->
     <script src="/client.js"></script>
 </body>

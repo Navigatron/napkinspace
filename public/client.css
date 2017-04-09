@@ -20,7 +20,7 @@ body, html {
     left: 16px;
     box-shadow: 0px 0px 8px 1px #000;
 }
-.tray_trigger{
+.menu_item{
     margin: 8px 8px;
     height: 48px;
     width: 48px;
@@ -57,5 +57,4 @@ body, html {
 .tray_object_selected{
     box-shadow: 0px 0px 8px 2px #000000;
 }
-
 

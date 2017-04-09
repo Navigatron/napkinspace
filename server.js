@@ -46,6 +46,7 @@ io.sockets.on('connection', function(socket){
 });
 
 //Make it live
-http.listen(process.env.PORT || 8080, function(){
-  console.log('listening on port '+process.env.PORT || 8080);
+var port = (typeof process.env.PORT == 'undefined')?8080:process.env.PORT;
+http.listen(port, function(){
+  console.log('listening on port '+port);
 });

@@ -1,14 +1,26 @@
 'use strict';
+//Because
+
 var canvas = document.getElementById('canvas');
 var context = canvas.getContext("2d");
 
 //Brown - '#df4b26'
 var curColor = '#000000';
 var curTool = "pen";// pen, eraser, pan, text
+/*
+Possible tools:
+Pen - draw to the screen
+Eraser - Pen but always white
+Pan - For non-touch screen users to navigate. Probably won't be implemented, they can move around in other ways.
+Text - For drawing Text to the canvas.
+Not yet implemented, but planned:
+Image - For putting a picture on the canvas
+*/
 var curSize = 2;
 var Drawers = {
     me: new Array()//Comes included
 };
+
 //Drawing - Object of Drawers
 //Drawer - Array of Paths
 //Path - Color, Size, Array of points
@@ -28,73 +40,53 @@ var camera = {
 // ...
 // I love you, jquery.
 
-//Attach an onlick event listener to every icon item.
-// $('.icon').on('click',function(){
-//     //Get the type - Tool, Color, Size
-//     var type = $(this).data('type');
-//     //The Selected Icon - used for deselecting all other icons of the same type.
-//     var sel;
-//     if(type == 'tool'){
-//         sel = curTool = $(this).data('value');
-//         console.log('User has selected new tool: '+curTool);
-//     }else if(type == 'color'){
-//         sel = curColor = $(this).data('value');
-//     }
-//     else if(type == 'size'){
-//         sel = curSize = $(this).data('value');
-//     }
-//     //Loop through each icon of the selected type. If it's the one we want, add the selected css class.
-//     //If it's not the one we want, make sure it doesn't have said css class.
-//     $('.icon').each(function(){
-//         if($(this).data('type') == type && $(this).data('value') == sel){
-//             $(this).addClass('selected');
-//         }else if($(this).data('type') == type){
-//             $(this).removeClass('selected');
-//         }
-//     });
-// });
+// Add event listeners to the main menu
+// Menu items do one of two things:
+//  --Perform their specific action (save)
+//  --Open a tray to select another option (color)
+$('.menu_item').on('click',function(){
+    // What operation do we perform with this menu item?
+    // -- tray - open/close a tray
+    // -- action - a specific action.
+    var operation = $(this).data('operation');
+    if(operation=='tray'){
+        //Which tray should we toggle?
+        var trayname = $(this).data('tray');
+        //Toggle desired Tray, Lower all other trays.
+        $('.tray').each(function(){
+            if($(this).data('type')==trayname){
+                //Turn this tray on, or off if it's already selected.
+                $(this).toggleClass('tray_active');
+            }else{
+                //make sure this tray is off.
+                $(this).removeClass('tray_active');
+            }
+        });
+    }else if(operation=='action'){
 
-//Add event listeners to Tray controls
-$('.tray_trigger').on('click',function(){
-    //Which tray should we toggle?
-    var trayname = $(this).data('tray');
-    //Toggle desired Tray, Lower all other trays.
-    $('.tray').each(function(){
-        if($(this).data('type')==trayname){
-            //Turn this tray on, or off if it's already selected.
-            $(this).toggleClass('tray_active');
-        }else{
-            //make sure this tray is off.
-            $(this).removeClass('tray_active');
-        }
-    });
+    }
 });
 
 //Add event listeners to Tray objects.
+//Objects either perform an action or change the behavior of drawing.
 $('.tray_object').on('click',function(){
-    var value = $(this).data('value');// Ethan - used this variable to reduce jQuery calls
+    //Get the type of item clicked and the value it contains.
+    var value = $(this).data('value');
     var type = $(this).parent().data('type');
+    //Detect tray closings
     if(value=='tray_close'){
-        //Close this tray, we're done here.
         $(this).parent().removeClass('tray_active');
         return;
     }
-    //~~Josh~~ Tools are actually updated now
     if(type=='color'){
         curColor = value;
-        curTool = "pen";
     }else if(type=='size'){
         curSize = value;
-        curTool = "pen";
+    }else if(type=='tool'){
+        curTool = value;
     }else if(type == 'options'){
         if(value == 'Save'){
-            //~~Josh~~ This will save the image
-            // Ethan - replaced line with function call
             saveAsPNG();
-        }
-        if(value == 'Text'){
-            //~~Josh~~ Changes tool to place text
-            curTool = "text";
         }
         if(value == 'Undo'){
             //~~Josh~~ This will undo last action
@@ -109,14 +101,15 @@ $('.tray_object').on('click',function(){
 
 // ~~~~~ Functions - utility, drawing, math stuff. ~~~~~
 
+
+
 // ~~Josh~~ function to get value from the text field
 var getTextInput = function(){
     var output = document.getElementById("textInput").value;
     return output;
 }
-
-//Draw all the points
-function redraw(){//redraw Everything.
+//Erase everything, re-draw everything.
+function redraw(){
     draw(false);
 }
 //Draw any points that haven't been drawn yet.
@@ -126,9 +119,11 @@ function update(){
 //Draw the Drawings to the screen - Draw Every point, or just the ones that haven't been drawn yet, depending on args.
 //@args (boolean) partial - Draw everything, or just what needs to be drawn?
 function draw(partial){
-    if(!partial)context.clearRect(0, 0, context.canvas.width, context.canvas.height); // Clears the canvas
-    //Set the Translation and Scale
+    //Depending on args, clear the screen.
+    if(!partial)context.clearRect(0, 0, context.canvas.width, context.canvas.height);
+    //we need to remember the location and scale for later. I don't remember why.
     context.save();
+    //Set the Translation and Scale
     context.translate(-camera.x,camera.y);
     context.scale(camera.scale,camera.scale);
 
@@ -144,9 +139,10 @@ function draw(partial){
         context.strokeRect(100,100,100,100);/*
     </debug>    */
 
-    // HEY. FOR-IN GIVES THE NAMES, NOT THE OBJECTS!!!
-    for(var drawerk in Drawers){//Draw all the Drawers
-        for(var pathk in Drawers[drawerk]){//Draw all their Paths
+    //Loop through all the drawers
+    for(var drawerk in Drawers){
+        //Loop through all the paths of this particular drawer
+        for(var pathk in Drawers[drawerk]){
             var path = Drawers[drawerk][pathk];
             // ~~Josh~~ this will check if the current path is text or pen
             if(path.pathType != 'text'){
@@ -176,8 +172,7 @@ function draw(partial){
                     //Draw the Path to the screen.
                     context.stroke();
                 }
-            }
-            else if(path.pathType == 'text'){
+            }else if(path.pathType == 'text'){
                 //~~Josh~~ I removed the check length statement, because text will only be added if there is text
                 if(!partial){
                     path.drawn = 'false';
@@ -201,6 +196,7 @@ function draw(partial){
     context.restore();
 }
 
+//Confine the camera to a limited scale, when we zoom too far in or out the universe starts to break down.
 var checkScale = function(){
     if(camera.scale>3760)camera.scale=3760;
     if(camera.scale<2.342e-36)camera.scale=2.342e-36;
@@ -219,13 +215,28 @@ var makeNewPath = function(){
 
 //Save the current view as a PNG file
 var saveAsPNG = function(){
-    window.location = canvas.toDataURL("image/png");
+    //Depends on canvas-toBlob.js and FileSaver.js
+    canvas.toBlob(function(blob) {
+        saveAs(blob, "output.png");
+    }, "image/png");
 }
 
+/*
+Spaces:
+Page space - A point relative to the screen
+Canvas space - A point relative to the Canvas
+
+Note - Canvas and Page are the same, as long as the canvas covers the entire screen.
+
+World space - A point relative to the world displayed on the canvas. World space scales and moves so the canvas sees different parts.
+*/
+
+//Convert Page space to World space.
 //@args point{x,y} in page space - pageX, pageY
 var pageToWorld = function(point){//converts Page X, Y to World X, Y
     return CanvasToWorld(pageToCanvas(point));
 }
+//Convert Page space to Canvas space.
 //@args point{x,y} in page space - pageX, pageY
 var pageToCanvas = function(point){//converts Page X, Y to canvas~ish X, Y
     var offset = $('#canvas').offset();
@@ -236,9 +247,9 @@ var pageToCanvas = function(point){//converts Page X, Y to canvas~ish X, Y
         y:y
     };
 }
-
+//Convert Canvas space to World space
 //ALWAYS CLONE YOUR ARGUMENTS. ***.
-var CanvasToWorld = function(pointeh){//Offset in canvas space, scale to world.
+var CanvasToWorld = function(pointeh){
     //Clone the object because *** Javascript.
     var point = clone(pointeh);
     point.x+=camera.x;
@@ -247,7 +258,7 @@ var CanvasToWorld = function(pointeh){//Offset in canvas space, scale to world.
     point.y/=camera.scale;
     return point;
 }
-
+//Convert World space to Canvas space
 var WorldToCanvas = function(pointeh){//Scale out of world, un-apply offset.
     var point = clone(pointeh);//See above. This really *** pisses me off.
     point.x*=camera.scale;
@@ -257,7 +268,8 @@ var WorldToCanvas = function(pointeh){//Scale out of world, un-apply offset.
     return point;
 }
 
-//Recursive Object Cloning Method from Stack Overflow TODO hide
+//Recursive Object Cloning Method from Stack Overflow
+//TODO - hide that we got this from Stack Overflow.
 var clone = function(obj){
     var copy;
     // Handle the 3 simple types, and null or undefined
@@ -270,9 +282,11 @@ var clone = function(obj){
 }
 
 // ~~~~~ Two-Finger Guestures - Pan and Scale ~~~~~
-var guesture = {}; //The current guesture. {camera, point1, point2, average, distance}
-//@args point1{x,y}, point2{x,y}
-var guestureStart = function(point1, point2, first){//Points in Canvas Space.
+ //The current guesture. {camera, point1, point2, average, distance}
+var guesture = {};
+//Called when a guesture is started.
+//@args point1{x,y}, point2{x,y} - points in canvas space.
+var guestureStart = function(point1, point2, first){
     //Two fingers don't happen at the same time. Delete the temporary path the first finger started.
     if(first){//Don't start deleting stuff if this is the second onwards guesture.
         Drawers.me.pop();
@@ -290,8 +304,10 @@ var guestureStart = function(point1, point2, first){//Points in Canvas Space.
     guesture.averageWorld = CanvasToWorld(guesture.average);
     guesture.distance = Math.sqrt((point2.x-point1.x)*(point2.x-point1.x)+(point2.y-point1.y)*(point2.y-point1.y));
 }
+//Called when two or more fingers are dragged on a touch screen.
 //I'm actually rather proud of this function right here.
-var guestureDrag = function(point1, point2){//@args, Points in Canvas Space
+//@args, Points in Canvas Space
+var guestureDrag = function(point1, point2){
     //Get the average Position
     var averageX = (point1.x+point2.x)/2;
     var averageY = (point1.y+point2.y)/2;
@@ -480,15 +496,19 @@ $('#canvas').mouseleave(function(e){
 });
 
 // ~~~~~ Establish Network and Define Reactions to Events ~~~~~
+//HEY SERVER! Here I am :)
 var socket = io.connect()
+//Server said hi!
 socket.on('connect',function(){
     console.log('Connected! ID is'+socket.io.engine.id);
 });
 
-//Server!
-socket.on('newPath',function(data){//@args color and size and sender
+//Someone made a new path.
+//@args color and size and sender
+socket.on('newPath',function(data){
     //Do we have a record of this sender?
     if(!Drawers[data.sender]){
+        //If not, create a slot for them.
         Drawers[data.sender] = new Array();
     }
     //Create a new Path for the sender
@@ -518,8 +538,9 @@ socket.on('newText',function(data){
     update();
 
 });
-//drawin stuffs
-socket.on('draw',function(data){//@args X and Y and Sender
+//Someone did some drawing
+//@args X and Y and Sender
+socket.on('draw',function(data){
     //Add a point to the user's current path
     if(!Drawers[data.sender]){
         console.log('Got Points for a Sender I don\'t Know!');
@@ -529,22 +550,29 @@ socket.on('draw',function(data){//@args X and Y and Sender
         //The problem with that is that it will require the server to save every user's most recent path data.
         return;
     }
+    //This line of code here. mmmmmm.
     Drawers[data.sender][Drawers[data.sender].length-1].points.push({x:data.x,y:data.y});
     update();
 });
-
-socket.on('delPath',function(data){//@args Sender
+//Someone wants to remove their most recent path. Probably because two finger zoom creates and deletes a path every time.
+//@args Sender
+socket.on('delPath',function(data){
     //Remove the user's most recent path.
     Drawers[data.sender].pop();
     redraw();
 });
-socket.on('nuke',function(){//@args Sender
+//Sometimes it's useful to just erase everyones screen. This isn't exposed to the public, however
+//Anyone with JS knowledge can trigger it.
+socket.on('nuke',function(){
     Drawers = {};
     Drawers.me = new Array();
+    //TODO reset Texters and/or Objectors etc.
     redraw();
 });
-//socket.emit to send data to the server
 
+//use socket.emit to send data to the server
+
+//TODO - should this come before we connect to the server?
 // ~~~~~ Page Setup ~~~~~
 var resizeCanvas = function(){
     $('#canvas')[0].width = window.innerWidth;//-96;
@@ -568,6 +596,7 @@ window.onload = function(){
     resizeCanvas();
     redraw();
     //Draw option text in the options tray.
+    //TODO - if it doesn't need to be a dynamic canvas, it shouldnt be.
     $('#tray_options').children().each(function(){
         $(this)[0].width = 64;
         $(this)[0].height = 64;
