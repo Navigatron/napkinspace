@@ -276,6 +276,7 @@ var guestureStart = function(point1, point2, first){//Points in Canvas Space.
     //Two fingers don't happen at the same time. Delete the temporary path the first finger started.
     if(first){//Don't start deleting stuff if this is the second onwards guesture.
         Drawers.me.pop();
+        socket.emit('delPath');
     }
     //Guestures are about comparing the finger positions to where they started.
     //As such, we need to record their initial positions And the Camera initials, which the guestures will be changing.
