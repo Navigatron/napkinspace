@@ -184,7 +184,7 @@ function draw(partial){
                 }
                 if(path.drawn == 'false'){
                     //Set the font
-                    context.font = '24px serif';
+                    context.font = JSON.stringify(path.size)+'px serif';
                     //set the color
                     context.color = '#FF0000';
                     var outvalue = JSON.stringify(path.stringValue);
@@ -275,7 +275,6 @@ var guesture = {}; //The current guesture. {camera, point1, point2, average, dis
 var guestureStart = function(point1, point2, first){//Points in Canvas Space.
     //Two fingers don't happen at the same time. Delete the temporary path the first finger started.
     if(first){//Don't start deleting stuff if this is the second onwards guesture.
-        // ~~Josh~~ this section will ensure that it does not delete stuff from the drawers and texters arrays unless that is the actual tool
         Drawers.me.pop();
     }
     //Guestures are about comparing the finger positions to where they started.
@@ -358,6 +357,7 @@ var handleStart = function(point){
         var textPath = {
             x: textX,
             y: textY,
+            textSize: 26/camera.scale,
             stringValue: textValue,
             pathType: tempPathType,
             drawn: 'false'
@@ -365,7 +365,7 @@ var handleStart = function(point){
         // ~~Josh~~ need to push to Texters list
         Drawers.me.push(textPath);//else spooky witchcraft.
         // ~~Josh~~ this is my first draft of a network function for text, based on the other draw function
-        socket.emit('newText',{x:textPath.x,y:textPath.y,stringValue:textPath.stringValue});
+        socket.emit('newText',{x:textPath.x,y:textPath.y,size:textPath.textSize,stringValue:textPath.stringValue});
     }
     update();
 }
@@ -510,6 +510,7 @@ socket.on('newText',function(data){
         x: data.x,
         y: data.y,
         stringValue: data.stringValue,
+        size: data.size,
         drawn: 'false',
         pathType: 'text'
     });
