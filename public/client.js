@@ -366,7 +366,7 @@ var handleStart = function(point){
         // ~~Josh~~ saves X and Y of touched point
         var textX = point.x;
         var textY = point.y;
-        // ~~Josh~~ gets value of text field 
+        // ~~Josh~~ gets value of text field
         var textValue = getTextInput();
         // ~~Josh~~ this distinguishes a path between pen or text
         var tempPathType = 'text';
@@ -393,7 +393,7 @@ var handleDrag = function(point){
         var curPath = Drawers.me[Drawers.me.length-1];
         curPath.points.push(point);
         socket.emit('draw',point);
-    }else if(curTool == pan){
+    }else if(curTool == 'pan'){
         //TODO
     }//else spooky witchcraft.
     update();
