@@ -495,6 +495,47 @@ $('#canvas').mouseleave(function(e){
     //handleStop(pageToWorld({x:e.touches[0].pageX,y:e.touches[0].pageY}));
 });
 
+// ~~~~~ Zoom in/out with the mouse ~~~~~
+var zoomSensitivity = 0.008
+function report(amount, point) {
+    var canvasPoint = pageToCanvas(point);
+    var worldPoint = CanvasToWorld(canvasPoint);
+    amount*=zoomSensitivity;
+    amount+=1;
+    if(amount>0){
+        camera.scale/=amount;
+    }else{
+        camera.scale*=-amount;
+    }
+    checkScale();
+    var newCanvas = WorldToCanvas(worldPoint);
+    var delta = {
+        x: canvasPoint.x-newCanvas.x,
+        y: canvasPoint.y-newCanvas.y
+    };
+    camera.x -= delta.x;//This is negative. I don't know why.
+    camera.y += delta.y;
+    redraw();
+}
+
+function callback(event) {
+    var normalized;
+    if (event.wheelDelta) {
+        normalized = (event.wheelDelta % 120 - 0) == -0 ? event.wheelDelta / 120 : event.wheelDelta / 12;
+    } else {
+        var rawAmmount = event.deltaY ? event.deltaY : event.detail;
+        normalized = -(rawAmmount % 3 ? rawAmmount * 10 : rawAmmount / 3);
+    }
+    var point={
+        x: event.pageX,
+        y: event.pageY
+    };
+    report(normalized, point);
+}
+
+var event = 'onwheel' in document ? 'wheel' : 'onmousewheel' in document ? 'mousewheel' : 'DOMMouseScroll';
+window.addEventListener(event, callback);
+
 // ~~~~~ Establish Network and Define Reactions to Events ~~~~~
 //HEY SERVER! Here I am :)
 var socket = io.connect()
