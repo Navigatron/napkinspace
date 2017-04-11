@@ -6,7 +6,7 @@ var context = canvas.getContext("2d");
 
 //Brown - '#df4b26'
 var curColor = '#000000';
-var curTool = "pen";// pen, eraser, pan, text
+var curTool = "pen";
 /*
 Possible tools:
 Pen - draw to the screen
@@ -20,11 +20,31 @@ var curSize = 2;
 var Drawers = {
     me: new Array()//Comes included
 };
-
-//Drawing - Object of Drawers
-//Drawer - Array of Paths
-//Path - Color, Size, Array of points
-//Point - x,y - Object representing a point
+/*
+Drawers{
+    Drawer{
+        path{
+            pathType: 'pen', - Draw a line
+            color - Color of the path
+            size - How big strokes in the path are
+            points{
+                x,
+                y
+            }
+            drawn - How many points have been drawn?
+        }
+        path{
+            pathType: 'text', - draw text
+            x,
+            y,
+            size: curSize*2/camera.scale, - How big is the text
+            color - color of text;
+            stringValue - what text to draw?
+            drawn: 'false' - has this been drawn
+        }
+    }
+}
+*/
 
 // Camera - Tells Location and Scale to look at canvas
 var camera = {
@@ -173,15 +193,11 @@ function draw(partial){
                     context.stroke();
                 }
             }else if(path.pathType == 'text'){
-                //~~Josh~~ I removed the check length statement, because text will only be added if there is text
-                if(!partial){
-                    path.drawn = 'false';
-                }
-                if(path.drawn == 'false'){
+                if(path.drawn == 'false' || !partial){
                     //Set the font
                     context.font = JSON.stringify(path.size)+'px serif';
                     //set the color
-                    context.color = '#FF0000';
+                    context.fillStyle = path.color;
                     var outvalue = JSON.stringify(path.stringValue);
                     outvalue = outvalue.substring(1,outvalue.length-1);
                     //Draw the text
@@ -338,7 +354,7 @@ var guestureStop = function(){
     //TODO - what needs to be done here? I don't think anything. hmm.
 }
 // ~~~~~ Event Handlers, Called by Listeners ~~~~~
-// Start Using a Tool at a point in Transformed Canvas Space.
+// Start Using a Tool at a point in Transformed Canvas (world) Space.
 var handleStart = function(point){
     if(curTool == 'pen'){
         //Start a New Path.
@@ -363,26 +379,19 @@ var handleStart = function(point){
     }else if(curTool == 'pan'){
         console.log('The PAN tool is not yet supported.');//TODO
     }else if(curTool == 'text'){
-        // ~~Josh~~ saves X and Y of touched point
-        var textX = point.x;
-        var textY = point.y;
-        // ~~Josh~~ gets value of text field
-        var textValue = getTextInput();
-        // ~~Josh~~ this distinguishes a path between pen or text
-        var tempPathType = 'text';
-        // ~~Josh~~ this saves the text values into an object
         var textPath = {
-            x: textX,
-            y: textY,
-            textSize: 26/camera.scale,
-            stringValue: textValue,
-            pathType: tempPathType,
+            x: point.x,
+            y: point.y,
+            //Current size ranges from 2 to 32. Multiply by two, ranges from 3 to 64. Divide by camera scale for scaling.
+            size: curSize*2/camera.scale,
+            color: curColor,
+            stringValue: getTextInput(),
+            pathType: 'text',
             drawn: 'false'
         };
-        // ~~Josh~~ need to push to Texters list
-        Drawers.me.push(textPath);//else spooky witchcraft.
+        Drawers.me.push(textPath);
         // ~~Josh~~ this is my first draft of a network function for text, based on the other draw function
-        socket.emit('newText',{x:textPath.x,y:textPath.y,size:textPath.textSize,stringValue:textPath.stringValue});
+        socket.emit('newText',{x:textPath.x,y:textPath.y,size:textPath.textSize,stringValue:textPath.stringValue,color:curColor});
     }
     update();
 }
