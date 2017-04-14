@@ -5,8 +5,8 @@ var canvas = document.getElementById('canvas');
 var context = canvas.getContext("2d");
 
 //Brown - '#df4b26'
-var curColor = '#FF0000';
-var curTool = "pen";// pen, eraser, pan, text
+var curColor = '#000000';
+var curTool = "pen";
 /*
 Possible tools:
 Pen - draw to the screen
@@ -20,25 +20,30 @@ var curSize = 2;
 var Drawers = {
     me: new Array()//Comes included
 };
-//~~Josh~~ Duplicate array which stores
-//  1. Text X
-//  2. Text Y
-//  3. Text String
-//If I add text input compatibility I will use this
-var Texters = {
-    me: new Array()
-};
 /*
-Structure:
-
-Drawers contains references to all those who draw
-Texters contains those who text
-Each person contains the objects they have created.
-People who draw have paths
-People who make text have text objects
-(Note: one person can be part of both groups)
-paths contain points, points have a location, size, and color
-Text objects contain a point, text, and size.
+Drawers{
+    Drawer{
+        path{
+            pathType: 'pen', - Draw a line
+            color - Color of the path
+            size - How big strokes in the path are
+            points{
+                x,
+                y
+            }
+            drawn - How many points have been drawn?
+        }
+        path{
+            pathType: 'text', - draw text
+            x,
+            y,
+            size: curSize*2/camera.scale, - How big is the text
+            color - color of text;
+            stringValue - what text to draw?
+            drawn: 'false' - has this been drawn
+        }
+    }
+}
 */
 
 // Camera - Tells Location and Scale to look at canvas
@@ -103,6 +108,12 @@ $('.tray_object').on('click',function(){
         if(value == 'Save'){
             saveAsPNG();
         }
+        if(value == 'Undo'){
+            //~~Josh~~ This will undo last action
+            Drawers.me.pop();
+            socket.emit('delPath');
+            redraw();
+        }
     }else{
         console.log('Something went wrong - Tray Object clicked with no type');
     }
@@ -110,6 +121,13 @@ $('.tray_object').on('click',function(){
 
 // ~~~~~ Functions - utility, drawing, math stuff. ~~~~~
 
+
+
+// ~~Josh~~ function to get value from the text field
+var getTextInput = function(){
+    var output = document.getElementById("textInput").value;
+    return output;
+}
 //Erase everything, re-draw everything.
 function redraw(){
     draw(false);
@@ -146,32 +164,47 @@ function draw(partial){
         //Loop through all the paths of this particular drawer
         for(var pathk in Drawers[drawerk]){
             var path = Drawers[drawerk][pathk];
-            if(path.points.length==0){
-                //This path doesn't have any points in it yet. Move on to the next path.
-                continue;
-            }
-            if(!partial || path.drawn < path.points.length-1){//If everything, Draw. If partial, Only draw if needed.
-                //Start a new Path.
-                context.beginPath();
-                //Set the color
-                context.strokeStyle = path.color;
-                //Set the size
-                context.lineWidth = path.size;
-                //Default Settings
-                context.lineCap = 'round';
-                //determine the starting point
-                //I don't really know how this next bit works.
-                var i = partial?path.drawn:0;
-                //Move to the Starting Point.
-                var j = i==0? 0:i-1;
-                context.moveTo(path.points[j].x,path.points[j].y);
-                for(i;i<path.points.length;i++){//Draw a Line to Each Point. TODO don't line to the first point.
-                    context.lineTo(path.points[i].x,path.points[i].y);
+            // ~~Josh~~ this will check if the current path is text or pen
+            if(path.pathType != 'text'){
+                if(path.points.length==0){
+                    //This path doesn't have any points in it yet. Move on to the next path.
+                    continue;
                 }
-                //Update the drawn variable to reflect that all points have been drawn.
-                path.drawn = path.points.length;
-                //Draw the Path to the screen.
-                context.stroke();
+                if(!partial || path.drawn < path.points.length-1){//If everything, Draw. If partial, Only draw if needed.
+                    //Start a new Path.
+                    context.beginPath();
+                    //Set the color
+                    context.strokeStyle = path.color;
+                    //Set the size
+                    context.lineWidth = path.size;
+                    //Default Settings
+                    context.lineCap = 'round';
+                    //determine the starting point
+                    var i = partial?path.drawn:0;
+                    //Move to the Starting Point.
+                    var j = i==0? 0:i-1;
+                    context.moveTo(path.points[j].x,path.points[j].y);
+                    for(i;i<path.points.length;i++){//Draw a Line to Each Point. TODO don't line to the first point.
+                        context.lineTo(path.points[i].x,path.points[i].y);
+                    }
+                    //Update the drawn variable to reflect that all points have been drawn.
+                    path.drawn = path.points.length;
+                    //Draw the Path to the screen.
+                    context.stroke();
+                }
+            }else if(path.pathType == 'text'){
+                if(path.drawn == 'false' || !partial){
+                    //Set the font
+                    context.font = JSON.stringify(path.size)+'px serif';
+                    //set the color
+                    context.fillStyle = path.color;
+                    var outvalue = JSON.stringify(path.stringValue);
+                    outvalue = outvalue.substring(1,outvalue.length-1);
+                    //Draw the text
+                    context.fillText(outvalue, path.x, path.y);
+                    //Make sure it isn't drawn again
+                    path.drawn = 'true';
+                }
             }
         }
     }
@@ -191,6 +224,7 @@ var makeNewPath = function(){
         color: curColor,
         size: curSize/camera.scale,//TODO consider
         points: new Array(),
+        pathType: 'pen',
         drawn:0//Used for the Update Function Optimization
     };
 }
@@ -320,7 +354,7 @@ var guestureStop = function(){
     //TODO - what needs to be done here? I don't think anything. hmm.
 }
 // ~~~~~ Event Handlers, Called by Listeners ~~~~~
-// Start Using a Tool at a point in Transformed Canvas Space.
+// Start Using a Tool at a point in Transformed Canvas (world) Space.
 var handleStart = function(point){
     if(curTool == 'pen'){
         //Start a New Path.
@@ -342,11 +376,23 @@ var handleStart = function(point){
         Drawers.me.push(newPath);
         socket.emit('newPath',{color:newPath.color,size:newPath.size});
         socket.emit('draw',point);
-    }else if(curTool == pan){
+    }else if(curTool == 'pan'){
         console.log('The PAN tool is not yet supported.');//TODO
-    }else if(curTool == "text"){
-        //TODO What do we do here
-    }//else spooky witchcraft.
+    }else if(curTool == 'text'){
+        var textPath = {
+            x: point.x,
+            y: point.y,
+            //Current size ranges from 2 to 32. Multiply by two, ranges from 3 to 64. Divide by camera scale for scaling.
+            size: curSize*2/camera.scale,
+            color: curColor,
+            stringValue: getTextInput(),
+            pathType: 'text',
+            drawn: 'false'
+        };
+        Drawers.me.push(textPath);
+        // ~~Josh~~ this is my first draft of a network function for text, based on the other draw function
+        socket.emit('newText',{x:textPath.x,y:textPath.y,size:textPath.textSize,stringValue:textPath.stringValue,color:curColor});
+    }
     update();
 }
 //Adds points to the current path.
@@ -356,7 +402,7 @@ var handleDrag = function(point){
         var curPath = Drawers.me[Drawers.me.length-1];
         curPath.points.push(point);
         socket.emit('draw',point);
-    }else if(curTool == pan){
+    }else if(curTool == 'pan'){
         //TODO
     }//else spooky witchcraft.
     update();
@@ -373,6 +419,7 @@ var handleStop = function(){
 var guesturing = false;
 var fingersOnScreen = 0;
 canvas.addEventListener("touchstart",function(e){
+    e.preventDefault();
     if(e.touches.length == 1){
         //There is one finger on the screen.
         fingersOnScreen = 1;
@@ -421,16 +468,18 @@ canvas.addEventListener('touchcancel',function(e){
     console.log('cancel');//Just going to leave this like this for now. Not much we can do with this.
 });
 
+//~~JOSH~~ THIS SECTION IS GONZO? WHY? BCS I DID IT
+
 //~~Josh~~ This will allow the S key to save the camera as an image
 //I should also consider making this CTRL + S
-document.onkeypress = function(evt) {
-    evt = evt || window.event;
-    var charCode = evt.keyCode || evt.which;
-    var charStr = String.fromCharCode(charCode);
-    if(charStr == 's'){
-        saveAsPNG();
-    }
-};
+//document.onkeypress = function(evt) {
+//    evt = evt || window.event;
+//    var charCode = evt.keyCode || evt.which;
+//    var charStr = String.fromCharCode(charCode);
+//    if(charStr == 's'){
+//        saveAsPNG();
+//    }
+//};
 
 // ~~~ Mouse ~~~ DONE TODO - mouse zoom in out on scroll, mouse pan?
 
@@ -441,6 +490,7 @@ $('#canvas').mousedown(function(e){
     handleStart(pageToWorld({x:e.pageX,y:e.pageY}));
 });
 $('#canvas').mousemove(function(e){
+    e.preventDefault();
     if(mouseDown){
         handleDrag(pageToWorld({x:e.pageX,y:e.pageY}));
     }
@@ -453,6 +503,47 @@ $('#canvas').mouseleave(function(e){
     if(mouseDown)mouseDown--;
     //handleStop(pageToWorld({x:e.touches[0].pageX,y:e.touches[0].pageY}));
 });
+
+// ~~~~~ Zoom in/out with the mouse ~~~~~
+var zoomSensitivity = 0.008
+function report(amount, point) {
+    var canvasPoint = pageToCanvas(point);
+    var worldPoint = CanvasToWorld(canvasPoint);
+    amount*=zoomSensitivity;
+    amount+=1;
+    if(amount>0){
+        camera.scale/=amount;
+    }else{
+        camera.scale*=-amount;
+    }
+    checkScale();
+    var newCanvas = WorldToCanvas(worldPoint);
+    var delta = {
+        x: canvasPoint.x-newCanvas.x,
+        y: canvasPoint.y-newCanvas.y
+    };
+    camera.x -= delta.x;//This is negative. I don't know why.
+    camera.y += delta.y;
+    redraw();
+}
+
+function callback(event) {
+    var normalized;
+    if (event.wheelDelta) {
+        normalized = (event.wheelDelta % 120 - 0) == -0 ? event.wheelDelta / 120 : event.wheelDelta / 12;
+    } else {
+        var rawAmmount = event.deltaY ? event.deltaY : event.detail;
+        normalized = -(rawAmmount % 3 ? rawAmmount * 10 : rawAmmount / 3);
+    }
+    var point={
+        x: event.pageX,
+        y: event.pageY
+    };
+    report(normalized, point);
+}
+
+var event = 'onwheel' in document ? 'wheel' : 'onmousewheel' in document ? 'mousewheel' : 'DOMMouseScroll';
+window.addEventListener(event, callback);
 
 // ~~~~~ Establish Network and Define Reactions to Events ~~~~~
 //HEY SERVER! Here I am :)
@@ -477,6 +568,25 @@ socket.on('newPath',function(data){
         points: new Array(),
         drawn: 0
     });
+});
+// ~~Josh~~ this will tell how to handle a received text path
+// DON'T FORGET TO GIVE IT THE RIGHT TYPE AND SET IT TO NOT DRAWN
+socket.on('newText',function(data){
+    //Do we have a record of this sender?
+    if(!Drawers[data.sender]){
+        Drawers[data.sender] = new Array();
+    }
+    //Create a new Path for the sender
+    Drawers[data.sender].push({
+        x: data.x,
+        y: data.y,
+        stringValue: data.stringValue,
+        size: data.size,
+        drawn: 'false',
+        pathType: 'text'
+    });
+    update();
+
 });
 //Someone did some drawing
 //@args X and Y and Sender

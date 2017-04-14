@@ -29,6 +29,11 @@ io.sockets.on('connection', function(socket){
       console.log('NPTH:'+socket.id);
       data.sender = socket.id;
       socket.broadcast.emit('newPath',data);
+  })// ~~Josh~~ new text
+  socket.on('newText', function(data){
+      console.log('NTXT:'+socket.id);
+      data.sender = socket.id;
+      socket.broadcast.emit('newText',data);
   });
   //New points for a path
   socket.on('draw', function(data){

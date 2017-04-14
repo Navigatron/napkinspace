@@ -60,6 +60,7 @@
     <!--This tray is for other things, such as Saving to PNG and/or drawing text. -->
     <div id='tray_options' class='tray' data-type='options'>
         <canvas class="tray_object" data-value='Save'></canvas>
+        <canvas class="tray_object" data-value='Undo'></canvas>
     </div>
     <!-- The tools tray -->
     <div id='tray_tool' class='tray' data-type='tool'>
@@ -69,6 +70,10 @@
         <div class="tray_object" data-value='text'>
             Text
         </div>
+        <form onsubmit="return false;">
+            Text:<br>
+            <input type="text" name="text" id="textInput" value="value"><br>
+        </form>
     </div>
 
     <!--This is where the magic happens. -->
