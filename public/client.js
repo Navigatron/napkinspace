@@ -505,7 +505,7 @@ $('#canvas').mouseleave(function(e){
 });
 
 // ~~~~~ Zoom in/out with the mouse ~~~~~
-var zoomSensitivity = 0.008
+var zoomSensitivity = 0.08;
 function report(amount, point) {
     var canvasPoint = pageToCanvas(point);
     var worldPoint = CanvasToWorld(canvasPoint);
